@@ -2,3 +2,4 @@
 geckodriver.log
 node_modules
 courses.json
+dist
