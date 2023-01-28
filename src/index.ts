@@ -217,4 +217,5 @@ async function run() {
 	fs.writeFileSync("courses.json", JSON.stringify(courses));
 }
 
+run();
 setInterval(run, 5 * 60 * 1000);
