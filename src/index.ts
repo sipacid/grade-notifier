@@ -186,7 +186,7 @@ async function run() {
 		console.log("New grade has been added");
 		var course = courses[0];
 		var embed = {
-			title: "New grade",
+			title: course.courseName,
 			url: "https://studentportal.inholland.nl/",
 			timestamp: new Date().toISOString(),
 			fields: [
@@ -209,7 +209,7 @@ async function run() {
 			],
 		};
 
-		await sendMessageToDiscord("", embed);
+		await sendMessageToDiscord("<@985554048935661648>", embed);
 	} else {
 		console.log("No new grades have been added.");
 	}
