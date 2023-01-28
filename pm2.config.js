@@ -3,7 +3,7 @@ module.exports = {
         {
             name: 'grade-notifier',
             script: './dist/index.js',
-            watch: true
+            watch: false,
         },
     ],
 };
