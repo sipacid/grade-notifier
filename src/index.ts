@@ -137,7 +137,7 @@ async function getTable(): Promise<string> {
 
 	console.log("Getting table from student portal...");
 
-	var browser = await launch();
+	var browser = await launch({ executablePath: process.env.CHROME_BIN, args: ["--no-sandbox", "--disable-setuid-sandbox"] });
 	var page = await browser.newPage();
 	await page.goto(loginUrl);
 
