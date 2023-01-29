@@ -20,7 +20,8 @@ async function sendMessageToDiscord(message: string, embed?: object) {
 
     if (response.status != 204) {
         console.log(`Error sending message to Discord. Status: ${response.status} \n Retrying in 5 seconds...`);
-        await new Promise(() => setTimeout(() => sendMessageToDiscord(message, embed), 5000));
+        await new Promise((resolve) => setTimeout(resolve, 5000));
+        await sendMessageToDiscord(message, embed);
     } else {
         console.log('Message sent to Discord.');
     }
@@ -141,10 +142,11 @@ async function getTable(): Promise<string> {
 
     console.log('Retrieving table from student portal...');
 
-    var browser = await launch({
-        executablePath: process.env.CHROME_BIN,
-        args: ['--no-sandbox', '--disable-setuid-sandbox']
-    });
+    // var browser = await launch({
+    //     executablePath: process.env.CHROME_BIN,
+    //     args: ['--no-sandbox', '--disable-setuid-sandbox']
+    // });
+    var browser = await launch();
     var page = await browser.newPage();
     await page.goto(loginUrl);
 
