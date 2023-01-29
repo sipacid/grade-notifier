@@ -192,7 +192,7 @@ async function main(): Promise<void> {
 
         var newCourses: Course[] = courses.filter((course) => {
             return !oldCourses.some((oldCourse) => {
-                return oldCourse.courseName == course.courseName;
+                return oldCourse.testCode == course.testCode && oldCourse.date == course.date;
             });
         });
 
