@@ -5,7 +5,7 @@ import { existsSync, writeFileSync, readFileSync } from 'fs';
 
 config();
 
-async function sendMessageToDiscord(message: string, embed?: object) {
+async function sendMessageToDiscord(message: string, embed?: object): Promise<void> {
     var data = { content: message };
 
     if (embed) data['embeds'] = [embed];
@@ -181,7 +181,7 @@ async function getTable(): Promise<string> {
     return table;
 }
 
-async function main() {
+async function main(): Promise<void> {
     var table = await getTable();
     var courses = await getCourses(table);
 
@@ -192,7 +192,9 @@ async function main() {
         console.log('Grades have been updated.');
 
         var newCourses: Course[] = courses.filter((course) => {
-            return !oldCourses.includes(course);
+            return !oldCourses.some((oldCourse) => {
+                return oldCourse.courseName == course.courseName;
+            });
         });
 
         newCourses.forEach(async (newCourse) => {
@@ -229,7 +231,7 @@ async function main() {
     writeFileSync('courses.json', JSON.stringify(courses));
 }
 
-async function run() {
+async function run(): Promise<void> {
     try {
         await main();
     } catch (error) {
