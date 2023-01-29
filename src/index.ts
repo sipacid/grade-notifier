@@ -1,7 +1,7 @@
 import { config } from "dotenv";
 import { Course } from "./interfaces";
 import { launch } from "puppeteer";
-import * as fs from "fs";
+import { existsSync, writeFileSync, readFileSync } from "fs";
 
 config();
 
@@ -18,7 +18,12 @@ async function sendMessageToDiscord(message: string, embed?: object) {
 		body: JSON.stringify(data),
 	});
 
-	if (response.status != 204) console.log(`Error sending message to Discord. Status: ${response.status}`);
+	if (response.status != 204) {
+		console.log(`Error sending message to Discord. Status: ${response.status} \n Retrying in 5 seconds...`);
+		await new Promise(() => setTimeout(() => sendMessageToDiscord(message, embed), 5000));
+	} else {
+		console.log("Message sent to Discord.");
+	}
 }
 
 async function getCourseNamesFromTable(table: string): Promise<string[]> {
@@ -102,7 +107,7 @@ async function getGradesFromTable(table: string): Promise<string[]> {
 }
 
 async function getCourses(table: string): Promise<Course[]> {
-	console.log("Getting courses from table...");
+	console.log("Retrieving courses from table...");
 
 	var courseNames = await getCourseNamesFromTable(table);
 	var testCodes = await getTestCodesFromTable(table);
@@ -135,7 +140,7 @@ async function getTable(): Promise<string> {
 	var GradeResultsXPath = "/html/body/form/div[2]/div[4]/div[1]/div/div[2]/div[1]/div/div/div/div[2]/div[2]/div/div[2]/div/ul/li[4]/div[2]/div";
 	var TableXpath = "/html/body/form/div[2]/div[4]/div[2]/div/div/div/div/div/div/div[1]/div/div[2]/div/div/table";
 
-	console.log("Getting table from student portal...");
+	console.log("Retrieving table from student portal...");
 
 	var browser = await launch({ executablePath: process.env.CHROME_BIN, args: ["--no-sandbox", "--disable-setuid-sandbox"] });
 	var page = await browser.newPage();
@@ -172,49 +177,61 @@ async function getTable(): Promise<string> {
 	return table;
 }
 
-async function run() {
+async function main() {
 	var table = await getTable();
 	var courses = await getCourses(table);
 
-	if (!fs.existsSync("courses.json")) {
-		fs.writeFileSync("courses.json", "");
-	}
+	if (!existsSync("courses.json")) writeFileSync("courses.json", "[]");
 
-	var oldCourses = fs.readFileSync("courses.json");
-	if (oldCourses.length != 0) oldCourses = JSON.parse(oldCourses.toString());
+	var oldCourses: Course[] = JSON.parse(readFileSync("courses.json").toString());
 	if (oldCourses.length != courses.length) {
-		console.log("New grade has been added");
-		var course = courses[0];
-		var embed = {
-			title: course.courseName,
-			url: "https://studentportal.inholland.nl/",
-			timestamp: new Date().toISOString(),
-			fields: [
-				{
-					name: "Course",
-					value: course.courseName,
-				},
-				{
-					name: "Test Code",
-					value: course.testCode,
-				},
-				{
-					name: "Date",
-					value: course.date,
-				},
-				{
-					name: "Grade",
-					value: course.grade,
-				},
-			],
-		};
+		console.log("Grades have been updated.");
 
-		await sendMessageToDiscord("<@985554048935661648>", embed);
+		var newCourses: Course[] = courses.filter((course) => {
+			return !oldCourses.includes(course);
+		});
+
+		newCourses.forEach(async (newCourse) => {
+			var embed = {
+				title: newCourse.courseName,
+				url: "https://studentportal.inholland.nl/",
+				timestamp: new Date().toISOString(),
+				fields: [
+					{
+						name: "Course",
+						value: newCourse.courseName,
+					},
+					{
+						name: "Test Code",
+						value: newCourse.testCode,
+					},
+					{
+						name: "Date of test",
+						value: newCourse.date,
+					},
+					{
+						name: "Grade",
+						value: newCourse.grade,
+					},
+				],
+			};
+
+			await sendMessageToDiscord("<@985554048935661648>", embed);
+		});
 	} else {
 		console.log("No new grades have been added.");
 	}
 
-	fs.writeFileSync("courses.json", JSON.stringify(courses));
+	writeFileSync("courses.json", JSON.stringify(courses));
+}
+
+async function run() {
+	try {
+		await main();
+	} catch (error) {
+		console.log(error);
+		await sendMessageToDiscord(`Oops something went wrong! :( \n\`\`\`${error}\`\`\``);
+	}
 }
 
 run();
