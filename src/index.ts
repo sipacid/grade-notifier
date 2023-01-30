@@ -183,7 +183,6 @@ async function getTable(): Promise<string> {
 async function main(): Promise<void> {
     var table = await getTable();
     var courses = await getCourses(table);
-    console.log(courses);
 
     if (!existsSync('courses.json')) writeFileSync('courses.json', '[]');
 
