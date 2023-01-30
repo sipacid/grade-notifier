@@ -133,12 +133,12 @@ async function getCourses(table: string): Promise<Course[]> {
 
 async function getTable(): Promise<string> {
     var loginUrl = 'https://studentportal.inholland.nl/';
-    var usernameXpath = '/html/body/section[7]/div[3]/div/div[2]/div[2]/div[2]/div[1]/form/div[2]/div[2]/input';
-    var passwordXpath = '/html/body/section[7]/div[3]/div/div[2]/div[2]/div[2]/div[1]/form/div[3]/div[2]/input';
-    var LogonButtonXpath = '/html/body/section[7]/div[3]/div/div[2]/div[2]/div[2]/div[1]/form/div[5]/div[1]/a';
-    var StudyResultsXpath = '/html/body/form/div[2]/div[4]/div[2]/div/div/div/div/div[4]/section/div/div[3]/div[3]/div/div[3]/div/div[2]/div/div/div/div[3]/div[1]/div';
-    var GradeResultsXPath = '/html/body/form/div[2]/div[4]/div[1]/div/div[2]/div[1]/div/div/div/div[2]/div[2]/div/div[2]/div/ul/li[4]/div[2]/div';
-    var TableXpath = '/html/body/form/div[2]/div[4]/div[2]/div/div/div/div/div/div/div[1]/div/div[2]/div/div/table';
+    var usernameSelector = '#login';
+    var passwordSelector = '#passwd';
+    var loginButtonSelector = '#nsg-x1-logon-button';
+    var studyResultsSelector = '#win0divPTNUI_LAND_REC_GROUPLET\\$2';
+    var gradeResultsSelector = '#win1divPTGP_STEP_DVW_PTGP_STEP_BTN_GB\\$3';
+    var tableSelector = '#win0divIH_PT_RES_VW2\\$grid\\$0';
 
     console.log('Retrieving table from student portal...');
 
@@ -149,29 +149,29 @@ async function getTable(): Promise<string> {
     var page = await browser.newPage();
     await page.goto(loginUrl);
 
-    await page.waitForXPath(usernameXpath);
-    var usernameElement = await page.$x(usernameXpath);
-    await usernameElement[0].type(process.env.STUDENT_USERNAME);
+    await page.waitForSelector(usernameSelector);
+    var usernameElement = await page.$(usernameSelector);
+    await usernameElement.type(process.env.STUDENT_USERNAME);
 
-    await page.waitForXPath(passwordXpath);
-    var passwordElement = await page.$x(passwordXpath);
-    await passwordElement[0].type(process.env.STUDENT_PASSWORD);
+    await page.waitForSelector(passwordSelector);
+    var passwordElement = await page.$(passwordSelector);
+    await passwordElement.type(process.env.STUDENT_PASSWORD);
 
-    await page.waitForXPath(LogonButtonXpath);
-    var logonButtonElement = (await page.$x(LogonButtonXpath)) as any;
-    await logonButtonElement[0].click();
+    await page.waitForSelector(loginButtonSelector);
+    var logonButtonElement = await page.$(loginButtonSelector);
+    await logonButtonElement.click();
 
-    await page.waitForXPath(StudyResultsXpath);
-    var studyResultsElement = (await page.$x(StudyResultsXpath)) as any;
-    await studyResultsElement[0].click();
+    await page.waitForSelector(studyResultsSelector);
+    var studyResultsElement = await page.$(studyResultsSelector);
+    await studyResultsElement.click();
 
-    await page.waitForXPath(GradeResultsXPath);
-    await new Promise((f) => setTimeout(f, 1000));
-    var gradeResultsElement = (await page.$x(GradeResultsXPath)) as any;
-    await gradeResultsElement[0].click();
+    await page.waitForSelector(gradeResultsSelector);
+    await new Promise((f) => setTimeout(f, 1000)); // wait cuz js is retarded
+    var gradeResultsElement = await page.$(gradeResultsSelector);
+    await gradeResultsElement.click();
 
-    await page.waitForXPath(TableXpath);
-    await page.$x(TableXpath);
+    await page.waitForSelector(tableSelector);
+    await page.$(tableSelector);
     var table = await page.evaluate(() => document.querySelector('*').outerHTML);
     await browser.close();
 
@@ -183,6 +183,7 @@ async function getTable(): Promise<string> {
 async function main(): Promise<void> {
     var table = await getTable();
     var courses = await getCourses(table);
+    console.log(courses);
 
     if (!existsSync('courses.json')) writeFileSync('courses.json', '[]');
 
