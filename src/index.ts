@@ -27,7 +27,7 @@ async function sendMessageToDiscord(message: string, embed?: object): Promise<vo
     }
 }
 
-async function getCourseNamesFromTable(table: string): Promise<string[]> {
+function getCourseNamesFromTable(table: string): string[] {
     var regex = new RegExp('\\"CRSE_CATALOG_DESCR.*\\"\\>(.*)\\<', 'gm');
     var courseNames = [];
     let m: RegExpExecArray = undefined;
@@ -47,7 +47,7 @@ async function getCourseNamesFromTable(table: string): Promise<string[]> {
     return courseNames;
 }
 
-async function getTestCodesFromTable(table: string): Promise<string[]> {
+function getTestCodesFromTable(table: string): string[] {
     var regex = new RegExp('\\"IH_PT_RES_VW_CATALOG_NBR.*\\"\\>(.*)\\<', 'gm');
     var testCodes = [];
     let m: RegExpExecArray = undefined;
@@ -67,7 +67,7 @@ async function getTestCodesFromTable(table: string): Promise<string[]> {
     return testCodes;
 }
 
-async function getDatesFromTable(table: string): Promise<string[]> {
+function getDatesFromTable(table: string): string[] {
     var regex = new RegExp('\\"IH_PT_RES_VW_GRADE_DT.*\\"\\>(.*)\\<', 'gm');
     var dates = [];
     let m: RegExpExecArray = undefined;
@@ -87,7 +87,7 @@ async function getDatesFromTable(table: string): Promise<string[]> {
     return dates;
 }
 
-async function getGradesFromTable(table: string): Promise<string[]> {
+function getGradesFromTable(table: string): string[] {
     var regex = new RegExp('\\"IH_PT_RES_VW_CRSE_GRADE_OFF.*\\"\\>(.*)\\<', 'gm');
     var grades = [];
     let m: RegExpExecArray = undefined;
@@ -107,13 +107,13 @@ async function getGradesFromTable(table: string): Promise<string[]> {
     return grades;
 }
 
-async function getCourses(table: string): Promise<Course[]> {
+function getCourses(table: string): Course[] {
     console.log('Retrieving courses from table...');
 
-    var courseNames = await getCourseNamesFromTable(table);
-    var testCodes = await getTestCodesFromTable(table);
-    var dates = await getDatesFromTable(table);
-    var grades = await getGradesFromTable(table);
+    var courseNames = getCourseNamesFromTable(table);
+    var testCodes = getTestCodesFromTable(table);
+    var dates = getDatesFromTable(table);
+    var grades = getGradesFromTable(table);
 
     var courses: Course[] = [];
 
@@ -142,10 +142,11 @@ async function getTable(): Promise<string> {
 
     console.log('Retrieving table from student portal...');
 
-    var browser = await launch({
-        executablePath: process.env.CHROME_BIN,
-        args: ['--no-sandbox', '--disable-setuid-sandbox']
-    });
+    // var browser = await launch({
+    //     executablePath: process.env.CHROME_BIN,
+    //     args: ['--no-sandbox', '--disable-setuid-sandbox']
+    // });
+    var browser = await launch({ headless: false });
     var page = await browser.newPage();
     await page.goto(loginUrl);
 
@@ -182,7 +183,7 @@ async function getTable(): Promise<string> {
 
 async function main(): Promise<void> {
     var table = await getTable();
-    var courses = await getCourses(table);
+    var courses = getCourses(table);
 
     if (!existsSync('courses.json')) writeFileSync('courses.json', '[]');
 
