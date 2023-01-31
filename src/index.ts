@@ -1,16 +1,16 @@
 import { config } from 'dotenv';
 import { Course } from './interfaces';
-import { launch } from 'puppeteer';
+import { Browser, launch } from 'puppeteer';
 import { existsSync, writeFileSync, readFileSync } from 'fs';
 
 config();
 
-async function sendMessageToDiscord(message: string, embed?: object): Promise<void> {
+async function sendMessageToDiscord(url: string, message: string, embed?: object): Promise<void> {
     var data = { content: message };
 
     if (embed) data['embeds'] = [embed];
 
-    var response = await fetch(process.env.DISCORD_WEBHOOK_URL, {
+    var response = await fetch(url, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'
@@ -21,7 +21,7 @@ async function sendMessageToDiscord(message: string, embed?: object): Promise<vo
     if (response.status != 204) {
         console.log(`Error sending message to Discord. Status: ${response.status} \n Retrying in 5 seconds...`);
         await new Promise((resolve) => setTimeout(resolve, 5000));
-        await sendMessageToDiscord(message, embed);
+        await sendMessageToDiscord(url, message, embed);
     } else {
         console.log('Message sent to Discord.');
     }
@@ -143,10 +143,8 @@ async function getTable(): Promise<string> {
 
     console.log('Retrieving table from student portal...');
 
-    var browser = await launch({
-        executablePath: process.env.CHROME_BIN,
-        args: ['--no-sandbox', '--disable-setuid-sandbox']
-    });
+    var browser: Browser;
+    process.env.CHROME_BIN ? (browser = await launch({ executablePath: process.env.CHROME_BIN, args: ['--no-sandbox', '--disable-setuid-sandbox'] })) : (browser = await launch());
     var page = await browser.newPage();
     await page.goto(loginUrl);
 
@@ -166,9 +164,9 @@ async function getTable(): Promise<string> {
     var studyResultsElement = await page.$(studyResultsSelector);
     await studyResultsElement.click();
 
-    await page.waitForSelector(toetsAanmeldingenSelector, { timeout: 60 * 1000 }); // wait cuz peoplesoft shit, wont be able to click on gradeResults if this is not here
+    await page.waitForSelector(toetsAanmeldingenSelector, { timeout: 60 * 1000 }); // waiting for js to load...
     await page.waitForSelector(gradeResultsSelector);
-    await new Promise((f) => setTimeout(f, 1000)); // wait cuz js is retarded
+    await new Promise((f) => setTimeout(f, 1000)); // wait again cause js is slow
     var gradeResultsElement = await page.$(gradeResultsSelector);
     await gradeResultsElement.click();
 
@@ -182,54 +180,70 @@ async function getTable(): Promise<string> {
     return table;
 }
 
+function createCourseEmbed(course: Course) {
+    return {
+        title: course.courseName,
+        url: 'https://studentportal.inholland.nl/',
+        timestamp: new Date().toISOString(),
+        fields: [
+            {
+                name: 'Course',
+                value: course.courseName
+            },
+            {
+                name: 'Test Code',
+                value: course.testCode
+            },
+            {
+                name: 'Date of test',
+                value: course.date
+            },
+            {
+                name: 'Grade',
+                value: course.grade
+            }
+        ]
+    };
+}
+
 async function main(): Promise<void> {
     var table = await getTable();
-    var courses = getCourses(table);
+    var currentCourses = getCourses(table);
 
     if (!existsSync('courses.json')) writeFileSync('courses.json', '[]');
 
     var oldCourses: Course[] = JSON.parse(readFileSync('courses.json').toString());
-    if (oldCourses.length != courses.length) {
+    if (oldCourses.length != currentCourses.length) {
         console.log('Grades have been updated.');
+        publicPush(currentCourses, oldCourses);
 
-        var newCourses: Course[] = courses.filter((course) => {
+        var newCourses: Course[] = currentCourses.filter((course) => {
             return !oldCourses.some((oldCourse) => {
                 return oldCourse.testCode == course.testCode && oldCourse.date == course.date;
             });
         });
 
         newCourses.forEach(async (newCourse) => {
-            var embed = {
-                title: newCourse.courseName,
-                url: 'https://studentportal.inholland.nl/',
-                timestamp: new Date().toISOString(),
-                fields: [
-                    {
-                        name: 'Course',
-                        value: newCourse.courseName
-                    },
-                    {
-                        name: 'Test Code',
-                        value: newCourse.testCode
-                    },
-                    {
-                        name: 'Date of test',
-                        value: newCourse.date
-                    },
-                    {
-                        name: 'Grade',
-                        value: newCourse.grade
-                    }
-                ]
-            };
-
-            await sendMessageToDiscord('<@985554048935661648>', embed);
+            var embed = createCourseEmbed(newCourse);
+            await sendMessageToDiscord(process.env.DISCORD_WEBHOOK_URL, '<@985554048935661648>', embed);
         });
     } else {
         console.log('No new grades have been added.');
     }
 
-    writeFileSync('courses.json', JSON.stringify(courses));
+    writeFileSync('courses.json', JSON.stringify(currentCourses));
+}
+
+async function publicPush(currentCourses: Course[], oldCourses: Course[]): Promise<void> {
+    var newCourses: Course[] = currentCourses.filter((course) => {
+        return !oldCourses.some((oldCourse) => {
+            return oldCourse.testCode == course.testCode; // no resits
+        });
+    });
+
+    newCourses.forEach(async (newCourse) => {
+        await sendMessageToDiscord(process.env.DISCORD_WEBHOOK_URL_PUBLIC, `@everyone ${newCourse.courseName} cijfer staat op peoplesoft.`);
+    });
 }
 
 async function run(): Promise<void> {
@@ -237,7 +251,7 @@ async function run(): Promise<void> {
         await main();
     } catch (error) {
         console.log(error);
-        await sendMessageToDiscord(`Oops something went wrong! :( \n\`\`\`${error}\`\`\``);
+        await sendMessageToDiscord(process.env.DISCORD_WEBHOOK_URL, `Oops something went wrong! :( \n\`\`\`${error}\`\`\``);
     }
 }
 
