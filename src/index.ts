@@ -242,7 +242,7 @@ async function publicPush(currentCourses: Course[], oldCourses: Course[]): Promi
     });
 
     newCourses.forEach(async (newCourse) => {
-        await sendMessageToDiscord(process.env.DISCORD_WEBHOOK_URL_PUBLIC, `@everyone ${newCourse.courseName} cijfer staat op peoplesoft.`);
+        await sendMessageToDiscord(process.env.DISCORD_WEBHOOK_URL_PUBLIC, `${newCourse.courseName} cijfer staat op peoplesoft.`);
     });
 }
 
