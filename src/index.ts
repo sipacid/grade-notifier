@@ -137,6 +137,7 @@ async function getTable(): Promise<string> {
     var passwordSelector = '#passwd';
     var loginButtonSelector = '#nsg-x1-logon-button';
     var studyResultsSelector = '#win0divPTNUI_LAND_REC_GROUPLET\\$2';
+    var toetsAanmeldingenSelector = '#win0divIH_CLASS_TBL_VW\\$grid\\$0';
     var gradeResultsSelector = '#win1divPTGP_STEP_DVW_PTGP_STEP_BTN_GB\\$3';
     var tableSelector = '#win0divIH_PT_RES_VW2\\$grid\\$0';
 
@@ -165,6 +166,7 @@ async function getTable(): Promise<string> {
     var studyResultsElement = await page.$(studyResultsSelector);
     await studyResultsElement.click();
 
+    await page.waitForSelector(toetsAanmeldingenSelector); // wait cuz peoplesoft shit, wont be able to click on gradeResults if this is not here
     await page.waitForSelector(gradeResultsSelector);
     await new Promise((f) => setTimeout(f, 1000)); // wait cuz js is retarded
     var gradeResultsElement = await page.$(gradeResultsSelector);
