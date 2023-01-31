@@ -166,7 +166,7 @@ async function getTable(): Promise<string> {
     var studyResultsElement = await page.$(studyResultsSelector);
     await studyResultsElement.click();
 
-    await page.waitForSelector(toetsAanmeldingenSelector); // wait cuz peoplesoft shit, wont be able to click on gradeResults if this is not here
+    await page.waitForSelector(toetsAanmeldingenSelector, { timeout: 60 * 1000 }); // wait cuz peoplesoft shit, wont be able to click on gradeResults if this is not here
     await page.waitForSelector(gradeResultsSelector);
     await new Promise((f) => setTimeout(f, 1000)); // wait cuz js is retarded
     var gradeResultsElement = await page.$(gradeResultsSelector);
