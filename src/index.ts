@@ -164,7 +164,7 @@ async function getTable(): Promise<string> {
     var studyResultsElement = await page.$(studyResultsSelector);
     await studyResultsElement.click();
 
-    await page.waitForSelector(toetsAanmeldingenSelector, { timeout: 60 * 1000 }); // waiting for js to load...
+    // await page.waitForSelector(toetsAanmeldingenSelector, { timeout: 60 * 1000 }); // waiting for js to load...
     await page.waitForSelector(gradeResultsSelector);
     await new Promise((f) => setTimeout(f, 1000)); // wait again cause js is slow
     var gradeResultsElement = await page.$(gradeResultsSelector);
