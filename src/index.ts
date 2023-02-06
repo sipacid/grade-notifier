@@ -188,7 +188,10 @@ async function run(): Promise<void> {
         await main();
     } catch (error) {
         console.log(error);
-        await sendMessageToDiscord(process.env.DISCORD_WEBHOOK_URL, `Oops something went wrong! :( \n\`\`\`${error}\`\`\``);
+        await sendMessageToDiscord(
+            process.env.DISCORD_WEBHOOK_URL,
+            `OOPSIE WOOPSIE!! Uwu We made a fucky wucky!! A wittle fucko boingo! The code monkeys at our headquarters are working VEWY HAWD to fix this! \n\`\`\`${error}\`\`\``
+        );
     }
 }
 
