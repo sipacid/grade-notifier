@@ -27,69 +27,8 @@ async function sendMessageToDiscord(url: string, message: string, embed?: object
     }
 }
 
-function getCourseNamesFromTable(table: string): string[] {
-    var regex = new RegExp('\\"CRSE_CATALOG_DESCR.*\\"\\>(.*)\\<', 'gm');
-    var courseNames = [];
-    let m: RegExpExecArray = undefined;
-
-    while ((m = regex.exec(table)) !== null) {
-        // This is necessary to avoid infinite loops with zero-width matches
-        if (m.index === regex.lastIndex) {
-            regex.lastIndex++;
-        }
-
-        // The result can be accessed through the `m`-variable.
-        m.forEach((match: any, groupIndex: any) => {
-            if (groupIndex != 0) courseNames.push(match);
-        });
-    }
-
-    return courseNames;
-}
-
-function getTestCodesFromTable(table: string): string[] {
-    var regex = new RegExp('\\"IH_PT_RES_VW_CATALOG_NBR.*\\"\\>(.*)\\<', 'gm');
-    var testCodes = [];
-    let m: RegExpExecArray = undefined;
-
-    while ((m = regex.exec(table)) !== null) {
-        // This is necessary to avoid infinite loops with zero-width matches
-        if (m.index === regex.lastIndex) {
-            regex.lastIndex++;
-        }
-
-        // The result can be accessed through the `m`-variable.
-        m.forEach((match: any, groupIndex: any) => {
-            if (groupIndex != 0) testCodes.push(match);
-        });
-    }
-
-    return testCodes;
-}
-
-function getDatesFromTable(table: string): string[] {
-    var regex = new RegExp('\\"IH_PT_RES_VW_GRADE_DT.*\\"\\>(.*)\\<', 'gm');
-    var dates = [];
-    let m: RegExpExecArray = undefined;
-
-    while ((m = regex.exec(table)) !== null) {
-        // This is necessary to avoid infinite loops with zero-width matches
-        if (m.index === regex.lastIndex) {
-            regex.lastIndex++;
-        }
-
-        // The result can be accessed through the `m`-variable.
-        m.forEach((match: any, groupIndex: any) => {
-            if (groupIndex != 0) dates.push(match);
-        });
-    }
-
-    return dates;
-}
-
-function getGradesFromTable(table: string): string[] {
-    var regex = new RegExp('\\"IH_PT_RES_VW_CRSE_GRADE_OFF.*\\"\\>(.*)\\<', 'gm');
-    var grades = [];
+function filterTableWithRegex(table: string, regex: RegExp): string[] {
+    var filtered = [];
     let m: RegExpExecArray = undefined;
 
     while ((m = regex.exec(table)) !== null) {
@@ -100,20 +39,20 @@ function getGradesFromTable(table: string): string[] {
 
         // The result can be accessed through the `m`-variable.
         m.forEach((match: string, groupIndex: any) => {
-            if (groupIndex != 0 && match != '&nbsp;') grades.push(match);
+            if (groupIndex != 0 && match != '&nbsp;') filtered.push(match);
         });
     }
 
-    return grades;
+    return filtered;
 }
 
 function getCourses(table: string): Course[] {
     console.log('Retrieving courses from table...');
 
-    var courseNames = getCourseNamesFromTable(table);
-    var testCodes = getTestCodesFromTable(table);
-    var dates = getDatesFromTable(table);
-    var grades = getGradesFromTable(table);
+    var courseNames = filterTableWithRegex(table, new RegExp('\\"CRSE_CATALOG_DESCR.*\\"\\>(.*)\\<', 'gm'));
+    var testCodes = filterTableWithRegex(table, new RegExp('\\"IH_PT_RES_VW_CATALOG_NBR.*\\"\\>(.*)\\<', 'gm'));
+    var dates = filterTableWithRegex(table, new RegExp('\\"IH_PT_RES_VW_GRADE_DT.*\\"\\>(.*)\\<', 'gm'));
+    var grades = filterTableWithRegex(table, new RegExp('\\"IH_PT_RES_VW_CRSE_GRADE_OFF.*\\"\\>(.*)\\<', 'gm'));
 
     var courses: Course[] = [];
 
@@ -126,7 +65,7 @@ function getCourses(table: string): Course[] {
         });
     }
 
-    console.log('Courses successfully retrieved from table.');
+    console.log(`Successfully retrieved ${courses.length} courses from table.`);
 
     return courses;
 }
@@ -137,7 +76,6 @@ async function getTable(): Promise<string> {
     var passwordSelector = '#passwd';
     var loginButtonSelector = '#nsg-x1-logon-button';
     var studyResultsSelector = '#win0divPTNUI_LAND_REC_GROUPLET\\$2';
-    var toetsAanmeldingenSelector = '#win0divIH_CLASS_TBL_VW\\$grid\\$0';
     var gradeResultsSelector = '#win1divPTGP_STEP_DVW_PTGP_STEP_BTN_GB\\$3';
     var tableSelector = '#win0divIH_PT_RES_VW2\\$grid\\$0';
 
@@ -164,9 +102,8 @@ async function getTable(): Promise<string> {
     var studyResultsElement = await page.$(studyResultsSelector);
     await studyResultsElement.click();
 
-    // await page.waitForSelector(toetsAanmeldingenSelector, { timeout: 60 * 1000 }); // waiting for js to load...
     await page.waitForSelector(gradeResultsSelector);
-    await new Promise((f) => setTimeout(f, 1000)); // wait again cause js is slow
+    await new Promise((resolve) => setTimeout(resolve, 1000)); // wait again cause js is slow, this can be fixed by waiting for an element on the toetsAanmeldingen page instead
     var gradeResultsElement = await page.$(gradeResultsSelector);
     await gradeResultsElement.click();
 
@@ -175,7 +112,7 @@ async function getTable(): Promise<string> {
     var table = await page.evaluate(() => document.querySelector('*').outerHTML);
     await browser.close();
 
-    console.log('Table successfully retrieved from student portal.');
+    console.log('Successfully retrieved table from student portal.');
 
     return table;
 }
@@ -256,4 +193,4 @@ async function run(): Promise<void> {
 }
 
 run();
-setInterval(run, 5 * 60 * 1000);
+setInterval(run, 5 * 60 * 1000); // run every 5 minutes
