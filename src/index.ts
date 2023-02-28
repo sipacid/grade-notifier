@@ -1,31 +1,10 @@
 import { config } from 'dotenv';
 import { Course } from './interfaces';
 import { Browser, launch } from 'puppeteer';
-import { existsSync, writeFileSync, readFileSync } from 'fs';
+import { createCourseEmbed, sendMessageToDiscord } from './discord';
+import { addCourseToDatabase, getCoursesFromDatabase } from './database';
 
 config();
-
-async function sendMessageToDiscord(url: string, message: string, embed?: object): Promise<void> {
-    var data = { content: message };
-
-    if (embed) data['embeds'] = [embed];
-
-    var response = await fetch(url, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(data)
-    });
-
-    if (response.status != 204) {
-        console.log(`Error sending message to Discord. Status: ${response.status} \n Retrying in 5 seconds...`);
-        await new Promise((resolve) => setTimeout(resolve, 5000));
-        await sendMessageToDiscord(url, message, embed);
-    } else {
-        console.log('Message sent to Discord.');
-    }
-}
 
 function filterTableWithRegex(table: string, regex: RegExp): string[] {
     var filtered = [];
@@ -46,7 +25,7 @@ function filterTableWithRegex(table: string, regex: RegExp): string[] {
     return filtered;
 }
 
-function getCourses(table: string): Course[] {
+function getCoursesFromTable(table: string): Course[] {
     console.log('Retrieving courses from table...');
 
     var courseNames = filterTableWithRegex(table, new RegExp('\\"CRSE_CATALOG_DESCR.*\\"\\>(.*)\\<', 'gm'));
@@ -82,7 +61,9 @@ async function getTable(): Promise<string> {
     console.log('Retrieving table from student portal...');
 
     var browser: Browser;
-    process.env.CHROME_BIN ? (browser = await launch({ executablePath: process.env.CHROME_BIN, args: ['--no-sandbox', '--disable-setuid-sandbox'] })) : (browser = await launch());
+    process.env.USR_BIN_CHROME
+        ? (browser = await launch({ executablePath: process.env.USR_BIN_CHROME, args: ['--no-sandbox', '--disable-setuid-sandbox'] }))
+        : (browser = await launch());
     var page = await browser.newPage();
     await page.goto(loginUrl);
 
@@ -117,61 +98,24 @@ async function getTable(): Promise<string> {
     return table;
 }
 
-function createCourseEmbed(course: Course) {
-    return {
-        title: course.courseName,
-        url: 'https://studentportal.inholland.nl/',
-        timestamp: new Date().toISOString(),
-        fields: [
-            {
-                name: 'Course',
-                value: course.courseName
-            },
-            {
-                name: 'Test Code',
-                value: course.testCode
-            },
-            {
-                name: 'Date of test',
-                value: course.date
-            },
-            {
-                name: 'Grade',
-                value: course.grade
-            }
-        ]
-    };
-}
-
-async function main(): Promise<void> {
-    var table = await getTable();
-    var currentCourses = getCourses(table);
-
-    if (!existsSync('courses.json')) writeFileSync('courses.json', '[]');
-
-    var oldCourses: Course[] = JSON.parse(readFileSync('courses.json').toString());
-    if (oldCourses.length != currentCourses.length) {
-        console.log('Grades have been updated.');
-        publicPush(currentCourses, oldCourses);
-
-        var newCourses: Course[] = currentCourses.filter((course) => {
-            return !oldCourses.some((oldCourse) => {
-                return oldCourse.testCode == course.testCode && oldCourse.date == course.date;
-            });
+async function privatePush(currentCourses: Course[], oldCourses: Course[]): Promise<void> {
+    var newCourses: Course[] = currentCourses.filter((course) => {
+        return !oldCourses.some((oldCourse) => {
+            return oldCourse.testCode == course.testCode && oldCourse.date == course.date;
         });
+    });
 
-        newCourses.forEach(async (newCourse) => {
-            var embed = createCourseEmbed(newCourse);
-            await sendMessageToDiscord(process.env.DISCORD_WEBHOOK_URL, '<@985554048935661648>', embed);
-        });
-    } else {
-        console.log('No new grades have been added.');
-    }
+    newCourses.forEach(async (newCourse) => {
+        addCourseToDatabase(newCourse);
 
-    writeFileSync('courses.json', JSON.stringify(currentCourses));
+        var embed = createCourseEmbed(newCourse);
+        await sendMessageToDiscord(process.env.DISCORD_WEBHOOK_URL, `<@${process.env.DISCORD_USER_ID}>`, embed);
+    });
 }
 
 async function publicPush(currentCourses: Course[], oldCourses: Course[]): Promise<void> {
+    if (!process.env.DISCORD_WEBHOOK_URL_PUBLIC) return;
+
     var newCourses: Course[] = currentCourses.filter((course) => {
         return !oldCourses.some((oldCourse) => {
             return oldCourse.testCode == course.testCode; // no resits
@@ -179,8 +123,23 @@ async function publicPush(currentCourses: Course[], oldCourses: Course[]): Promi
     });
 
     newCourses.forEach(async (newCourse) => {
-        await sendMessageToDiscord(process.env.DISCORD_WEBHOOK_URL_PUBLIC, `${newCourse.courseName} cijfer staat op peoplesoft.`);
+        await sendMessageToDiscord(process.env.DISCORD_WEBHOOK_URL_PUBLIC, `\`${newCourse.courseName}\` cijfer staat op peoplesoft.`);
     });
+}
+
+async function main(): Promise<void> {
+    var table = await getTable();
+    var currentCourses = getCoursesFromTable(table);
+
+    var oldCourses: Course[] = await getCoursesFromDatabase();
+    if (oldCourses.length == currentCourses.length) {
+        console.log('No new grades have been added.');
+        return;
+    }
+
+    console.log('Grades have been updated.');
+    publicPush(currentCourses, oldCourses);
+    privatePush(currentCourses, oldCourses);
 }
 
 async function run(): Promise<void> {
