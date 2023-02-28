@@ -6,10 +6,9 @@
   "scripts": {
     "lint": "eslint --ext .ts",
     "lint:fix": "eslint --fix --ext .ts",
-    "dev": "npx ts-node src/index.ts",
-    "build": "tsc",
-    "build:start": "node dist/index.js",
-    "pm2": "tsc && pm2 start pm2.config.js"
+    "start:dev": "npx ts-node src/index.ts",
+    "start:prod": "node dist/index.js",
+    "build": "tsc"
   },
   "author": "sipacid",
   "license": "ISC",
@@ -24,6 +23,7 @@
   },
   "dependencies": {
     "dotenv": "^16.0.3",
+    "mongodb": "5.1",
     "puppeteer": "^19.6.2"
   }
 }
