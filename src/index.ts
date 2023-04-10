@@ -57,41 +57,47 @@ async function getTable(): Promise<string> {
     var studyResultsSelector = '#win0divPTNUI_LAND_REC_GROUPLET\\$2';
     var gradeResultsSelector = '#win1divPTGP_STEP_DVW_PTGP_STEP_BTN_GB\\$3';
     var tableSelector = '#win0divIH_PT_RES_VW2\\$grid\\$0';
+    var table = '';
 
     console.log('Retrieving table from student portal...');
 
     var browser: Browser;
-    process.env.USR_BIN_CHROME
-        ? (browser = await launch({ executablePath: process.env.USR_BIN_CHROME, args: ['--no-sandbox', '--disable-setuid-sandbox'] }))
-        : (browser = await launch());
-    var page = await browser.newPage();
-    await page.goto(loginUrl);
+    try {
+        process.env.USR_BIN_CHROME
+            ? (browser = await launch({ executablePath: process.env.USR_BIN_CHROME, args: ['--no-sandbox', '--disable-setuid-sandbox'] }))
+            : (browser = await launch());
+        var page = await browser.newPage();
+        await page.goto(loginUrl);
 
-    await page.waitForSelector(usernameSelector);
-    var usernameElement = await page.$(usernameSelector);
-    await usernameElement.type(process.env.STUDENT_USERNAME);
+        await page.waitForSelector(usernameSelector);
+        var usernameElement = await page.$(usernameSelector);
+        await usernameElement.type(process.env.STUDENT_USERNAME);
 
-    await page.waitForSelector(passwordSelector);
-    var passwordElement = await page.$(passwordSelector);
-    await passwordElement.type(process.env.STUDENT_PASSWORD);
+        await page.waitForSelector(passwordSelector);
+        var passwordElement = await page.$(passwordSelector);
+        await passwordElement.type(process.env.STUDENT_PASSWORD);
 
-    await page.waitForSelector(loginButtonSelector);
-    var logonButtonElement = await page.$(loginButtonSelector);
-    await logonButtonElement.click();
+        await page.waitForSelector(loginButtonSelector);
+        var logonButtonElement = await page.$(loginButtonSelector);
+        await logonButtonElement.click();
 
-    await page.waitForSelector(studyResultsSelector);
-    var studyResultsElement = await page.$(studyResultsSelector);
-    await studyResultsElement.click();
+        await page.waitForSelector(studyResultsSelector);
+        var studyResultsElement = await page.$(studyResultsSelector);
+        await studyResultsElement.click();
 
-    await page.waitForSelector(gradeResultsSelector);
-    await new Promise((resolve) => setTimeout(resolve, 1000)); // wait again cause js is slow, this can be fixed by waiting for an element on the toetsAanmeldingen page instead
-    var gradeResultsElement = await page.$(gradeResultsSelector);
-    await gradeResultsElement.click();
+        await page.waitForSelector(gradeResultsSelector);
+        await new Promise((resolve) => setTimeout(resolve, 1000)); // wait again cause js is slow, this can be fixed by waiting for an element on the toetsAanmeldingen page instead
+        var gradeResultsElement = await page.$(gradeResultsSelector);
+        await gradeResultsElement.click();
 
-    await page.waitForSelector(tableSelector);
-    await page.$(tableSelector);
-    var table = await page.evaluate(() => document.querySelector('*').outerHTML);
-    await browser.close();
+        await page.waitForSelector(tableSelector);
+        await page.$(tableSelector);
+        table = await page.evaluate(() => document.querySelector('*').outerHTML);
+    } catch {
+        throw new Error('Failed to retrieve table from student portal.');
+    } finally {
+        await browser.close();
+    }
 
     console.log('Successfully retrieved table from student portal.');
 
