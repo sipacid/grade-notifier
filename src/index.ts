@@ -93,8 +93,8 @@ async function getTable(): Promise<string> {
         await page.waitForSelector(tableSelector);
         await page.$(tableSelector);
         table = await page.evaluate(() => document.querySelector('*').outerHTML);
-    } catch {
-        throw new Error('Failed to retrieve table from student portal.');
+    } catch (error) {
+        await sendMessageToDiscord(process.env.DISCORD_WEBHOOK_URL, `Failed to retrieve table from student portal with error: \n\`\`\`${error}\`\`\``);
     } finally {
         await browser.close();
     }
