@@ -16,4 +16,4 @@ services:
     build: 
       context: .
       dockerfile: Dockerfile
-    image: result/latest
+    image: bot/latest
