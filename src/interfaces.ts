@@ -1,6 +1,6 @@
 export interface Course {
     courseName: string;
     testCode: string;
-    date: string;
+    date: Date;
     grade: string;
 }
