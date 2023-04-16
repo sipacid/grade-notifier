@@ -1,6 +1,7 @@
 import { Browser, launch } from 'puppeteer';
 import { sendMessageToDiscord } from './discord';
 import { Course } from './interfaces';
+import { platform } from 'os';
 
 function filterTableWithRegex(table: string, regex: RegExp): string[] {
 	const filtered: any[] = [];
@@ -53,8 +54,8 @@ export async function getTable(): Promise<string> {
 
 	let browser: Browser;
 	try {
-		process.env.USR_BIN_CHROME
-			? (browser = await launch({ executablePath: process.env.USR_BIN_CHROME, args: ['--no-sandbox', '--disable-setuid-sandbox'] }))
+		platform() != 'win32'
+			? (browser = await launch({ executablePath: '/usr/bin/google-chrome', args: ['--no-sandbox', '--disable-setuid-sandbox'] }))
 			: (browser = await launch());
 		const page = await browser.newPage();
 		await page.goto(loginUrl);
