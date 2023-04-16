@@ -2,7 +2,7 @@ import { MongoClient } from 'mongodb';
 import { Course } from './interfaces';
 
 export async function getCoursesFromDatabase(): Promise<Course[]> {
-    const client = new MongoClient(process.env.MONGODB_URI, {});
+    const client = new MongoClient(process.env.MONGODB_URI!, {});
     const courses: Course[] = [];
 
     try {
@@ -21,7 +21,7 @@ export async function getCoursesFromDatabase(): Promise<Course[]> {
 }
 
 export async function addCourseToDatabase(course: Course): Promise<void> {
-    const client = new MongoClient(process.env.MONGODB_URI, {});
+    const client = new MongoClient(process.env.MONGODB_URI!, {});
 
     try {
         await client.connect();
