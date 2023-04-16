@@ -15,5 +15,5 @@ services:
   bot:
     build: 
       context: .
-      dockerfile: Dockerfile
+      dockerfile: bot.Dockerfile
     image: bot/latest
