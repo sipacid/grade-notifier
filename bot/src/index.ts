@@ -9,7 +9,7 @@ config();
 async function sendPrivateAnnouncement(currentCourses: Course[], oldCourses: Course[]): Promise<void> {
 	const newCourses: Course[] = currentCourses.filter((course) => {
 		return !oldCourses.some((oldCourse) => {
-			return oldCourse.testCode === course.testCode && oldCourse.date === course.date;
+			return oldCourse.testCode === course.testCode && oldCourse.date.toISOString() === course.date.toISOString();
 		});
 	});
 
@@ -44,7 +44,7 @@ async function checkGrades(): Promise<void> {
 	const coursesFromWebsite = getCoursesFromTable(table);
 
 	const coursesFromDatabase: Course[] = await getCoursesFromDatabase();
-	if (coursesFromDatabase.length == coursesFromWebsite.length) {
+	if (coursesFromDatabase.length == coursesFromWebsite.length || coursesFromWebsite.length == 0 || table === '') {
 		return;
 	}
 
