@@ -79,8 +79,6 @@ async function validateEnviromentVariables() {
 }
 
 async function run(): Promise<void> {
-	validateEnviromentVariables();
-
 	try {
 		await checkGrades();
 	} catch (error) {
@@ -91,6 +89,8 @@ async function run(): Promise<void> {
 		);
 	}
 }
+
+validateEnviromentVariables();
 
 run();
 setInterval(run, 5 * 60 * 1000); // run every 5 minutes
