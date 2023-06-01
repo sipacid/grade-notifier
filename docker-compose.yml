@@ -1,19 +1,18 @@
 version: "3.9"
 services:
-
   database:
     image: mongo
     restart: always
     ports:
       - 27019:27017
     volumes:
-     - /home/eve/databases/grade-notifier:/data/db
+      - /home/eve/databases/grade-notifier:/data/db
     environment:
       MONGO_INITDB_ROOT_USERNAME: ${MONGO_INITDB_ROOT_USERNAME}
       MONGO_INITDB_ROOT_PASSWORD: ${MONGO_INITDB_ROOT_PASSWORD}
 
   bot:
-    build: 
+    build:
       context: .
       dockerfile: bot.Dockerfile
-    image: bot/latest
+    image: grade-notifier/latest
