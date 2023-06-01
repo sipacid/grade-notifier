@@ -4,8 +4,6 @@ import { createCourseEmbed, sendMessageToDiscord } from './discord';
 import { addCourseToDatabase, getCoursesFromDatabase } from './database';
 import { getCoursesFromTable, getTable } from './peoplesoft';
 
-config();
-
 async function sendPrivateAnnouncement(currentCourses: Course[], oldCourses: Course[]): Promise<void> {
 	const newCourses: Course[] = currentCourses.filter((course) => {
 		return !oldCourses.some((oldCourse) => {
@@ -26,7 +24,9 @@ async function sendPrivateAnnouncement(currentCourses: Course[], oldCourses: Cou
 }
 
 async function sendPublicAnnouncement(currentCourses: Course[], oldCourses: Course[]): Promise<void> {
-	if (!process.env.DISCORD_WEBHOOK_URL_PUBLIC) return;
+	if (!process.env.DISCORD_WEBHOOK_URL_PUBLIC) {
+		return;
+	}
 
 	const newCourses: Course[] = currentCourses.filter((course) => {
 		return !oldCourses.some((oldCourse) => {
@@ -90,6 +90,7 @@ async function run(): Promise<void> {
 	}
 }
 
+config();
 validateEnviromentVariables();
 
 run();
