@@ -1,4 +1,4 @@
-import { Browser, Page, launch } from 'puppeteer';
+import { Browser, Page, PuppeteerLaunchOptions, launch } from 'puppeteer';
 import { sendMessageToDiscord } from './discord';
 import { Course } from './interfaces';
 
@@ -51,11 +51,16 @@ export async function getTable(): Promise<string> {
 	const tableSelector = '#win0divIH_PT_RES_VW2\\$grid\\$0';
 	let table = '';
 
+	const launchOptions: PuppeteerLaunchOptions =
+		process.argv[2] == 'production'
+			? { headless: 'new', executablePath: 'google-chrome-stable', args: ['--no-sandbox', '--disable-setuid-sandbox'] }
+			: { headless: false };
+
 	let browser: Browser;
 	let page: Page;
 
 	try {
-		browser = await launch({ headless: 'new' });
+		browser = await launch(launchOptions);
 		page = await browser.newPage();
 		await page.goto(loginUrl);
 
