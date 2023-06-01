@@ -55,7 +55,7 @@ export async function getTable(): Promise<string> {
 	let page: Page;
 
 	try {
-		browser = await launch({ headless: 'new' });
+		browser = await launch({ headless: false });
 		page = await browser.newPage();
 		await page.goto(loginUrl);
 
@@ -78,7 +78,13 @@ export async function getTable(): Promise<string> {
 		if (!logonButtonElement) throw new Error('Logon button element not found');
 		await logonButtonElement.click();
 
+		// shit fix for #2 https://github.com/sipacid/grade-notifier/issues/2
 		await page.waitForNavigation();
+		await new Promise((resolve) => setTimeout(resolve, 5000));
+
+		const hackPage = await browser.newPage();
+		await hackPage.goto(page.url());
+		await hackPage.close();
 
 		await page.waitForSelector(studyResultsSelector);
 		const studyResultsElement = await page.$(studyResultsSelector);
