@@ -1,4 +1,4 @@
-import { Browser, launch } from 'puppeteer';
+import { Browser, Page, launch } from 'puppeteer';
 import { sendMessageToDiscord } from './discord';
 import { Course } from './interfaces';
 
@@ -52,32 +52,42 @@ export async function getTable(): Promise<string> {
 	let table = '';
 
 	let browser: Browser;
+	let page: Page;
 
 	try {
-		browser = await launch({ headless: false });
-		const page = await browser.newPage();
+		browser = await launch({ headless: 'new' });
+		page = await browser.newPage();
 		await page.goto(loginUrl);
 
 		await page.waitForSelector(usernameSelector);
 		const usernameElement = await page.$(usernameSelector);
-		await usernameElement!.type(process.env.STUDENT_USERNAME!);
+		if (!usernameElement) throw new Error('Username element not found!');
+		await usernameElement.type(process.env.STUDENT_USERNAME!);
 
 		await page.waitForSelector(passwordSelector);
 		const passwordElement = await page.$(passwordSelector);
-		await passwordElement!.type(process.env.STUDENT_PASSWORD!);
+		if (!passwordElement) throw new Error('Password element not found');
+		await passwordElement.type(process.env.STUDENT_PASSWORD!);
 
 		await page.waitForSelector(loginButtonSelector);
 		const logonButtonElement = await page.$(loginButtonSelector);
-		await logonButtonElement!.click();
+		if (!logonButtonElement) throw new Error('Logon button element not found');
+		await logonButtonElement.click();
+
+		await page.waitForNavigation();
 
 		await page.waitForSelector(studyResultsSelector);
 		const studyResultsElement = await page.$(studyResultsSelector);
-		await studyResultsElement!.click();
+		if (!studyResultsElement) throw new Error('Study results element not found');
+		await studyResultsElement.click();
+
+		await page.waitForNavigation();
 
 		await page.waitForSelector(gradeResultsSelector);
 		await new Promise((resolve) => setTimeout(resolve, 1000)); // wait again cause js is slow, this can be fixed by waiting for an element on the toetsAanmeldingen page instead
 		const gradeResultsElement = await page.$(gradeResultsSelector);
-		await gradeResultsElement!.click();
+		if (!gradeResultsElement) throw new Error('Grade results element not found');
+		await gradeResultsElement.click();
 
 		await page.waitForSelector(tableSelector);
 		await page.$(tableSelector);
