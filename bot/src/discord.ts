@@ -3,7 +3,9 @@ import { Course } from './interfaces';
 export async function sendMessageToDiscord(url: string, message: string, embed?: object): Promise<void> {
 	const data: any = { content: message };
 
-	if (embed) data['embeds'] = [embed];
+	if (embed) {
+		data['embeds'] = [embed];
+	}
 
 	const response = await fetch(url, {
 		method: 'POST',
@@ -14,11 +16,14 @@ export async function sendMessageToDiscord(url: string, message: string, embed?:
 	});
 
 	if (response.status != 204) {
-		console.log(`Error sending message to Discord. Status: ${response.status} \n Retrying in 5 seconds...`);
-		await new Promise((resolve) => setTimeout(resolve, 5000));
+		console.log(`Error sending message to Discord. Status: ${response.status}`);
+	}
+
+	if (response.status === 429) {
+		console.log(`Ratelimited, trying again`);
+		const retry = response.headers.get('x-ratelimit-reset-after') as any;
+		await new Promise((resolve) => setTimeout(resolve, retry * 1000));
 		await sendMessageToDiscord(url, message, embed);
-	} else {
-		console.log('Message sent to Discord.');
 	}
 }
 
