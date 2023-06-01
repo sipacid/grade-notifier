@@ -55,7 +55,7 @@ export async function getTable(): Promise<string> {
 	let page: Page;
 
 	try {
-		browser = await launch({ headless: false });
+		browser = await launch({ headless: 'new' });
 		page = await browser.newPage();
 		await page.goto(loginUrl);
 
