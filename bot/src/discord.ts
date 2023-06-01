@@ -16,11 +16,11 @@ export async function sendMessageToDiscord(url: string, message: string, embed?:
 	});
 
 	if (response.status != 204) {
-		console.log(`Error sending message to Discord. Status: ${response.status}`);
+		console.error(`Error sending message to Discord. Status: ${response.status}`);
 	}
 
 	if (response.status === 429) {
-		console.log(`Ratelimited, trying again`);
+		console.warn(`Ratelimited, trying again`);
 		const retry = response.headers.get('x-ratelimit-reset-after') as any;
 		await new Promise((resolve) => setTimeout(resolve, retry * 1000));
 		await sendMessageToDiscord(url, message, embed);

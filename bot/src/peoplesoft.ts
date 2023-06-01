@@ -59,6 +59,10 @@ export async function getTable(): Promise<string> {
 		page = await browser.newPage();
 		await page.goto(loginUrl);
 
+		await page.setExtraHTTPHeaders({
+			'Accept-Language': 'en-US,en;q=0.9'
+		});
+
 		await page.waitForSelector(usernameSelector);
 		const usernameElement = await page.$(usernameSelector);
 		if (!usernameElement) throw new Error('Username element not found!');
