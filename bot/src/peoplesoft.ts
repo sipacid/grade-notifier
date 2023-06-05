@@ -1,4 +1,4 @@
-import { Browser, Page, PuppeteerLaunchOptions, launch } from 'puppeteer';
+import { Browser, launch, Page, PuppeteerLaunchOptions } from 'puppeteer';
 import { sendMessageToDiscord } from './discord';
 import { Course } from './interfaces';
 
@@ -53,7 +53,11 @@ export async function getTable(): Promise<string> {
 
 	const launchOptions: PuppeteerLaunchOptions =
 		process.argv[2] == 'production'
-			? { headless: 'new', executablePath: 'google-chrome-stable', args: ['--no-sandbox', '--disable-setuid-sandbox'] }
+			? {
+					headless: 'new',
+					executablePath: 'google-chrome-stable',
+					args: ['--no-sandbox', '--disable-setuid-sandbox']
+			  }
 			: { headless: false };
 
 	let browser: Browser;
