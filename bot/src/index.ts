@@ -11,8 +11,8 @@ async function sendPrivateAnnouncement(currentCourses: Course[], oldCourses: Cou
 		});
 	});
 
-	newCourses.forEach(async (newCourse) => {
-		addCourseToDatabase(newCourse);
+	for (const newCourse of newCourses) {
+		await addCourseToDatabase(newCourse);
 
 		const embed = createCourseEmbed(newCourse);
 		await sendMessageToDiscord(
@@ -20,7 +20,7 @@ async function sendPrivateAnnouncement(currentCourses: Course[], oldCourses: Cou
 			process.env.DISCORD_USER_ID ? `<@${process.env.DISCORD_USER_ID}>` : 'A new grade has been added.',
 			embed
 		);
-	});
+	}
 }
 
 async function sendPublicAnnouncement(currentCourses: Course[], oldCourses: Course[]): Promise<void> {
@@ -34,9 +34,9 @@ async function sendPublicAnnouncement(currentCourses: Course[], oldCourses: Cour
 		});
 	});
 
-	newCourses.forEach(async (newCourse) => {
+	for (const newCourse of newCourses) {
 		await sendMessageToDiscord(process.env.DISCORD_WEBHOOK_URL_PUBLIC!, `\`${newCourse.courseName}\` cijfer staat op peoplesoft.`);
-	});
+	}
 }
 
 async function checkGrades(): Promise<void> {
@@ -48,11 +48,11 @@ async function checkGrades(): Promise<void> {
 		return;
 	}
 
-	sendPublicAnnouncement(coursesFromWebsite, coursesFromDatabase);
-	sendPrivateAnnouncement(coursesFromWebsite, coursesFromDatabase);
+	await sendPublicAnnouncement(coursesFromWebsite, coursesFromDatabase);
+	await sendPrivateAnnouncement(coursesFromWebsite, coursesFromDatabase);
 }
 
-async function validateEnviromentVariables() {
+function validateEnviromentVariables() {
 	if (!process.env.MONGODB_URI) {
 		throw new Error('MONGODB_URI is not set.');
 	}
