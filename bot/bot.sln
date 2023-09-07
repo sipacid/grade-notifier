@@ -1,0 +1,22 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "bot", "bot\bot.csproj", "{AF7FC8E6-27BF-43AF-B471-3831C8B4C3D6}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "psg", "psg\psg.csproj", "{1DA05AE2-A46E-4C88-9F66-D6099FB4849B}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{AF7FC8E6-27BF-43AF-B471-3831C8B4C3D6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AF7FC8E6-27BF-43AF-B471-3831C8B4C3D6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AF7FC8E6-27BF-43AF-B471-3831C8B4C3D6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AF7FC8E6-27BF-43AF-B471-3831C8B4C3D6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1DA05AE2-A46E-4C88-9F66-D6099FB4849B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1DA05AE2-A46E-4C88-9F66-D6099FB4849B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1DA05AE2-A46E-4C88-9F66-D6099FB4849B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1DA05AE2-A46E-4C88-9F66-D6099FB4849B}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal
