@@ -4,6 +4,8 @@ using System.Text.Json.Nodes;
 using psg;
 using static System.DateTime;
 
+namespace bot;
+
 internal static class Discord
 {
     internal static async Task<HttpResponseMessage> SendToWebhook(string webhookUrl, string message,
