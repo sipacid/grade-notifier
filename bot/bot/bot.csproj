@@ -11,8 +11,9 @@
     <ProjectReference Include="..\psg\psg.csproj" />
   </ItemGroup>
 
+
   <ItemGroup>
-    <PackageReference Include="Npgsql" Version="7.0.4" />
+    <PackageReference Include="MongoDB.Driver" Version="2.21.0" />
   </ItemGroup>
 
 </Project>
