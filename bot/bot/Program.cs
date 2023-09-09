@@ -1,5 +1,7 @@
 ﻿using psg;
 
+namespace bot;
+
 public class Program
 {
     private static readonly string? Email = Environment.GetEnvironmentVariable("EMAIL");
@@ -11,16 +13,24 @@ public class Program
     private static readonly string? PublicWebhookUrl =
         Environment.GetEnvironmentVariable("PUBLIC_WEBHOOK_URL");
 
+    private static readonly string? DatabaseConnectionString =
+        Environment.GetEnvironmentVariable("MONGODB_CONNECTION_STRING");
+
     private static async Task Main(string[] args)
     {
         CheckEnvironmentVariables();
+        Database database = new(DatabaseConnectionString!);
 
         while (true)
         {
             IEnumerable<Grade> newGrades = await Grades.GetGrades(Email!, Password!);
-            IEnumerable<Grade> oldGrades = new List<Grade>();
+            IEnumerable<Grade> oldGrades = await database.GetGrades();
 
             IEnumerable<Grade> filteredGrades = FilterGrades(newGrades, oldGrades, true);
+            foreach (Grade newGrade in filteredGrades)
+            {
+                
+            }
 
             Thread.Sleep(1000 * 60 * 5);
         }
@@ -40,10 +50,11 @@ public class Program
 
     private static void CheckEnvironmentVariables()
     {
-        if (Email == null || Password == null || PrivateWebhookUrl == null)
+        if (Email == null || Password == null || PrivateWebhookUrl == null ||
+            DatabaseConnectionString == null)
         {
             Console.WriteLine(
-                "Please set the EMAIL, PASSWORD and PRIVATE_WEBHOOK_URL environment variables.");
+                "Please set the EMAIL, PASSWORD, PRIVATE_WEBHOOK_URL and MONGODB_CONNECTION_STRING environment variables.");
             return;
         }
 
