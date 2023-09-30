@@ -30,6 +30,7 @@ public class Program
             foreach (Grade newGrade in filteredGrades)
             {
                 await Discord.SendToWebhook(PrivateWebhookUrl!, "New grade!", Discord.GetGradeEmbed(newGrade)!);
+                await database.InsertGrade(newGrade);
             }
 
             Thread.Sleep(1000 * 60 * 5);
