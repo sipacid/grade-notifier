@@ -1,5 +1,6 @@
 using System.Globalization;
 using System.Text;
+using System.Text.Json;
 using System.Text.Json.Nodes;
 using psg;
 using static System.DateTime;
@@ -9,10 +10,16 @@ namespace bot;
 internal static class Discord
 {
     internal static async Task<HttpResponseMessage> SendToWebhook(string webhookUrl, string message,
-        JsonNode gradeEmbed)
+        JsonNode? gradeEmbed)
     {
+        var data = new
+        {
+            content = message,
+            embeds = new[] { gradeEmbed }
+        };
+
         using HttpClient client = new();
-        StringContent content = new($"{{\"content\": \"{message}\"}}", Encoding.UTF8,
+        StringContent content = new(JsonSerializer.Serialize(data), Encoding.UTF8,
             "application/json");
 
         return await client.PostAsync(webhookUrl, content);

@@ -29,7 +29,7 @@ public class Program
             IEnumerable<Grade> filteredGrades = FilterGrades(newGrades, oldGrades, true);
             foreach (Grade newGrade in filteredGrades)
             {
-                
+                await Discord.SendToWebhook(PrivateWebhookUrl!, "New grade!", Discord.GetGradeEmbed(newGrade)!);
             }
 
             Thread.Sleep(1000 * 60 * 5);
@@ -55,7 +55,7 @@ public class Program
         {
             Console.WriteLine(
                 "Please set the EMAIL, PASSWORD, PRIVATE_WEBHOOK_URL and MONGODB_CONNECTION_STRING environment variables.");
-            return;
+            Environment.Exit(1);
         }
 
         if (PublicWebhookUrl == null)
