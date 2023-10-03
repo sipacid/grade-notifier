@@ -17,4 +17,12 @@ public class Grade
     public string TestCode { get; }
     public DateOnly DateOfTest { get; }
     public string Score { get; }
+
+    public bool Sufficient()
+    {
+        bool number = double.TryParse(Score, out double score);
+        if (number) return score >= 55;
+
+        return Score.Equals("V");
+    }
 }
