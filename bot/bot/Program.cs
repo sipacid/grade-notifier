@@ -29,7 +29,8 @@ public class Program
             IEnumerable<Grade> filteredGrades = FilterGrades(newGrades, oldGrades, true);
             foreach (Grade newGrade in filteredGrades)
             {
-                await Discord.SendToWebhook(PrivateWebhookUrl!, "New grade!", Discord.GetGradeEmbed(newGrade)!);
+                await Discord.SendToWebhook(PrivateWebhookUrl!, "New grade!",
+                    Discord.GetGradeEmbed(newGrade)!);
                 await database.InsertGrade(newGrade);
             }
 
