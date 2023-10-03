@@ -3,8 +3,6 @@ services:
   database:
     image: mongo
     restart: always
-    ports:
-      - 27019:27017
     volumes:
       - /home/eve/databases/grade-notifier:/data/db
     environment:
@@ -14,5 +12,11 @@ services:
   bot:
     build:
       context: .
-      dockerfile: bot.Dockerfile
-    image: grade-notifier/latest
+      dockerfile: ./bot/Dockerfile
+    image: sipacid/grade-notifier:latest
+    environment:
+      EMAIL: ${EMAIL}
+      PASSWORD: ${PASSWORD}
+      PRIVATE_WEBHOOK_URL: ${PRIVATE_WEBHOOK_URL}
+      PUBLIC_WEBHOOK_URL: ${PUBLIC_WEBHOOK_URL}
+      MONGODB_CONNECTION_STRING: ${MONGODB_CONNECTION_STRING}
