@@ -15,7 +15,11 @@ internal class Database
 
     internal async Task<List<Grade>> GetGrades()
     {
-        return await _grades.Find(Builders<Grade>.Filter.Empty).ToListAsync();
+        return await _grades
+            .Find(Builders<Grade>.Filter.Empty)
+            .Project<Grade>(Builders<Grade>.Projection
+                .Exclude("_id"))
+            .ToListAsync();
     }
 
     internal async Task InsertGrade(Grade grade)
