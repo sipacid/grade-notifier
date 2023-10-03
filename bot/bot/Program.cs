@@ -7,11 +7,8 @@ public class Program
     private static readonly string? Email = Environment.GetEnvironmentVariable("EMAIL");
     private static readonly string? Password = Environment.GetEnvironmentVariable("PASSWORD");
 
-    private static readonly string? PrivateWebhookUrl =
-        Environment.GetEnvironmentVariable("PRIVATE_WEBHOOK_URL");
-
-    private static readonly string? PublicWebhookUrl =
-        Environment.GetEnvironmentVariable("PUBLIC_WEBHOOK_URL");
+    private static readonly string? WebhookUrl =
+        Environment.GetEnvironmentVariable("WEBHOOK_URL");
 
     private static readonly string? DatabaseConnectionString =
         Environment.GetEnvironmentVariable("MONGODB_CONNECTION_STRING");
@@ -29,8 +26,9 @@ public class Program
             IEnumerable<Grade> filteredGrades = FilterGrades(newGrades, oldGrades, true);
             foreach (Grade newGrade in filteredGrades)
             {
-                await Discord.SendToWebhook(PrivateWebhookUrl!, "New grade!",
+                await Discord.SendToWebhook(WebhookUrl!, "New grade!",
                     Discord.GetGradeEmbed(newGrade)!);
+
                 await database.InsertGrade(newGrade);
             }
 
@@ -52,17 +50,11 @@ public class Program
 
     private static void CheckEnvironmentVariables()
     {
-        if (Email == null || Password == null || PrivateWebhookUrl == null ||
-            DatabaseConnectionString == null)
-        {
-            Console.WriteLine(
-                "Please set the EMAIL, PASSWORD, PRIVATE_WEBHOOK_URL and MONGODB_CONNECTION_STRING environment variables.");
-            Environment.Exit(1);
-        }
+        if (Email != null && Password != null && WebhookUrl != null &&
+            DatabaseConnectionString != null) return;
 
-        if (PublicWebhookUrl == null)
-        {
-            Console.WriteLine("PUBLIC_WEBHOOK_URL environment variable not set, ignoring.");
-        }
+        Console.WriteLine(
+            "Please set the EMAIL, PASSWORD, PRIVATE_WEBHOOK_URL and MONGODB_CONNECTION_STRING environment variables.");
+        Environment.Exit(1);
     }
 }
