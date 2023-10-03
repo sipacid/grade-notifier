@@ -30,7 +30,7 @@ internal static class Discord
             {
                 await Console.Error.WriteLineAsync(
                     $"Rate limited, waiting {response.Headers.RetryAfter?.Delta?.TotalSeconds} seconds");
-                Thread.Sleep((int)response.Headers.RetryAfter?.Delta?.TotalMilliseconds!);
+                Thread.Sleep((int)response.Headers.RetryAfter?.Delta?.TotalSeconds!);
                 continue;
             }
 
