@@ -13,14 +13,14 @@ internal static class Discord
     internal static async Task SendToWebhook(string webhookUrl, string message,
         JsonNode gradeEmbed)
     {
+        var data = new { content = message, embeds = new[] { gradeEmbed } };
+
+        using HttpClient client = new();
+        StringContent content = new(JsonSerializer.Serialize(data), Encoding.UTF8,
+            "application/json");
+
         while (true)
         {
-            var data = new { content = message, embeds = new[] { gradeEmbed } };
-
-            using HttpClient client = new();
-            StringContent content = new(JsonSerializer.Serialize(data), Encoding.UTF8,
-                "application/json");
-
             HttpResponseMessage response = await client.PostAsync(webhookUrl, content);
             if (response.IsSuccessStatusCode) return;
 

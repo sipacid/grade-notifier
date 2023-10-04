@@ -70,6 +70,9 @@ internal class StudentPortalClient
     internal async Task<string> GetHtmlTable()
     {
         HttpResponseMessage response = await _httpClient.GetAsync(GradeUrl);
+        if (!response.IsSuccessStatusCode)
+            throw new Exception("Failed to get HTML table.");
+
         string responseString = await response.Content.ReadAsStringAsync();
 
         return RegexUtil.HtmlTableRegex().Match(responseString).Groups[1].Value;
