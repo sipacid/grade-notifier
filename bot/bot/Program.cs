@@ -10,13 +10,10 @@ public class Program
     private static readonly string? WebhookUrl =
         Environment.GetEnvironmentVariable("WEBHOOK_URL");
 
-    private static readonly string? DatabaseConnectionString =
-        Environment.GetEnvironmentVariable("MONGODB_CONNECTION_STRING");
-
     private static async Task Main(string[] args)
     {
         CheckEnvironmentVariables();
-        Database database = new(DatabaseConnectionString!);
+        Database database = new();
 
         while (true)
         {
@@ -50,8 +47,7 @@ public class Program
 
     private static void CheckEnvironmentVariables()
     {
-        if (Email != null && Password != null && WebhookUrl != null &&
-            DatabaseConnectionString != null) return;
+        if (Email != null && Password != null && WebhookUrl != null) return;
 
         Console.WriteLine(
             "Please set the EMAIL, PASSWORD, PRIVATE_WEBHOOK_URL and MONGODB_CONNECTION_STRING environment variables.");

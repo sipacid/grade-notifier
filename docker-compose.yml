@@ -1,21 +1,14 @@
 version: "3.9"
-services:
-  database:
-    image: mongo
-    restart: always
-    volumes:
-      - /home/eve/databases/grade-notifier:/data/db
-    environment:
-      MONGO_INITDB_ROOT_USERNAME: ${MONGO_INITDB_ROOT_USERNAME}
-      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_INITDB_ROOT_PASSWORD}
 
+services:
   bot:
     build:
       context: .
       dockerfile: ./bot/Dockerfile
     image: sipacid/grade-notifier:latest
+    volumes:
+      - ./database:/database
     environment:
       EMAIL: ${EMAIL}
       PASSWORD: ${PASSWORD}
       WEBHOOK_URL: ${WEBHOOK_URL}
-      MONGODB_CONNECTION_STRING: ${MONGODB_CONNECTION_STRING}
