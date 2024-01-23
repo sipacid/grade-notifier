@@ -50,7 +50,7 @@ public class Program
         if (Email != null && Password != null && WebhookUrl != null) return;
 
         Console.WriteLine(
-            "Please set the EMAIL, PASSWORD, PRIVATE_WEBHOOK_URL and MONGODB_CONNECTION_STRING environment variables.");
+            "Please set the EMAIL, PASSWORD and WEBHOOK_URL environment variables.");
         Environment.Exit(1);
     }
 }
