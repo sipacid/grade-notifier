@@ -1,11 +1,8 @@
-version: "3.9"
-
 services:
   bot:
     build:
       context: .
       dockerfile: ./bot/Dockerfile
-    image: sipacid/grade-notifier:latest
     volumes:
       - ./database:/database
     environment:
