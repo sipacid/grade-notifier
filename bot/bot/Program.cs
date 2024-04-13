@@ -21,6 +21,8 @@ public class Program
             IEnumerable<Grade> oldGrades = await database.GetGrades();
 
             IEnumerable<Grade> filteredGrades = FilterGrades(newGrades, oldGrades, true);
+			filteredGrades = filteredGrades.OrderBy(grade => grade.DateOfTest);
+
             foreach (Grade newGrade in filteredGrades)
             {
                 await Discord.SendToWebhook(WebhookUrl!, "New grade!",
