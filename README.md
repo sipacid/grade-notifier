@@ -4,36 +4,22 @@ Notifies you when you have a new grade on peoplesoft (Inholland)
 
 ## Table of Contents
 
-- [Installation](#installation)
 - [Usage](#usage)
 - [License](#license)
-
-## Installation
-
-1. Clone the repository to your machine
-
-```bash
-git clone https://github.com/sipacid/grade-notifier.git
-```
-
-2. Rename the `.env.example` file to `.env` and fill in the required information
-
-```bash
-mv .env.example .env
-```
 
 ## Usage
 
 To start the project use the following command
 
 ```bash
-docker compose up -d
-```
-
-To stop the project use the following command
-
-```bash
-docker compose down
+docker run -d \
+  --restart always \
+  -v $(pwd)/database:/database \
+  -e EMAIL=${EMAIL} \
+  -e PASSWORD=${PASSWORD} \
+  -e WEBHOOK_URL=${WEBHOOK_URL} \
+  --name grade-notifier \
+  ghcr.io/sipacid/grade-notifier:main
 ```
 
 ## License
