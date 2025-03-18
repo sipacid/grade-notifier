@@ -15,9 +15,9 @@ To start the project use the following command
 docker run -d \
   --restart always \
   -v $(pwd)/database:/database \
-  -e EMAIL=${EMAIL} \
-  -e PASSWORD=${PASSWORD} \
-  -e WEBHOOK_URL=${WEBHOOK_URL} \
+  -e EMAIL="<your_email>" \
+  -e PASSWORD="<your_password>" \
+  -e WEBHOOK_URL="<your_webhook_url>" \
   --name grade-notifier \
   ghcr.io/sipacid/grade-notifier:main
 ```
