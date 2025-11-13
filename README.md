@@ -2,6 +2,11 @@
 
 Notifies you when you have a new grade on peoplesoft (Inholland)
 
+## End of Life
+
+There has been an update which requires you to use Microsoft authentication to login, which breaks the method used to retrieve grades.
+Project has been archived as of 13-11-2025.
+
 ## Table of Contents
 
 - [Usage](#usage)
